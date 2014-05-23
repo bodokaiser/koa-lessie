@@ -7,13 +7,10 @@ var app = koa();
 app.use(lessie(__dirname));
 
 app.use(function *(next) {
-  yield this.body = readFile(__dirname + '/index.html');
+  if (this.path !== '/') return yield next;
+
+  this.type = 'html';
+  this.body = fs.createReadStream(__dirname + '/index.html');
 });
 
 app.listen(3000);
-
-function readFile(path) {
-  return function(callback) {
-    fs.readFile(path, callback);
-  }
-}
