@@ -160,7 +160,7 @@ describe('lessie(options)', function() {
 
   });
 
-  describe.only('lessie({ path: "/styles", cache: true })', function() {
+  describe('lessie({ path: "/styles", cache: true })', function() {
 
     before(function() {
       this.options = {
