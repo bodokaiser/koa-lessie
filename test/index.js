@@ -21,7 +21,7 @@ describe('lessie(path)', function() {
     });
   });
 
-  it('should respond compiled stylesheet whith its imports', function(done) {
+  it('should respond compiled stylesheet with its imports', function(done) {
     var self = this;
 
     helper.compile('imports.less', function(err, stylesheet) {
@@ -40,10 +40,6 @@ describe('lessie(path)', function() {
 
 describe('lessie(options)', function() {
 
-  beforeEach(function() {
-    this.options = { path: __dirname + '/styles '};
-  });
-
   describe('lessie({ path: "/styles" })', function() {
 
   });
@@ -51,32 +47,41 @@ describe('lessie(options)', function() {
   describe('lessie({ path: "/styles", prefix: "/stylesheets" })', function() {
 
     before(function() {
-      this.options.prefix = '/stylesheets';
+      this.options = {
+        prefix: '/stylesheets',
+        path: __dirname + '/styles'
+      };
     });
+
+    before(helper.setup);
+
+    it('should respond compiled stylesheet in directory', function(done) {
+      var self = this;
+
+      helper.compile('package/index.less', function(err, stylesheet) {
+        if (err) throw err;
+
+        self.agent.get('/stylesheets/package.css')
+          .expect('Content-Type', /css/)
+          .expect('Content-Length', stylesheet.length)
+          .expect(200, stylesheet, done);
+      });
+    });
+
+    after(helper.destroy)
 
   });
 
   describe('lessie({ path: "/styles", compress: true })', function() {
 
-    before(function() {
-      this.options.compress = true;
-    });
-
   });
 
   describe('lessie({ path: "/styles", recompile: true })', function() {
-
-    before(function() {
-      this.options.recompile = true;
-    });
 
   });
 
   describe('lessie({ path: "/styles", index: ["style.css"] })', function() {
 
-    before(function() {
-      this.options.index = ['style.css'];
-    });
 
   });
 
