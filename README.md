@@ -40,7 +40,7 @@ For example if we have the file `/usr/styles/body.less` then a request to
       path: '/usr/styles',
       prefix: '/stylesheets',
       compress: true,
-      recompile: true,
+      cache: false,
       index: ['bootstrap.less', 'index.less']
     }));
 
@@ -52,7 +52,7 @@ allow you more control to match your existing application structure.
 * `path`, sets the path to the less files, required.
 * `prefix`, will handle requests which path has this `prefix`, defaults to `/`.
 * `compress`, will minify the less files, defaults to `false`.
-* `recompile`, will recompile less files on each request, defaults to `true`.
+* `cache`, will cache less files defaults to `false`.
 * `index`, if request path points to an directory it will look for the defined
   `index`, defaults to `['index.less']`.
 

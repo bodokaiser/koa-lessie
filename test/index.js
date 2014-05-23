@@ -160,7 +160,42 @@ describe('lessie(options)', function() {
 
   });
 
-  describe('lessie({ path: "/styles", recompile: true })', function() {
+  describe.only('lessie({ path: "/styles", cache: true })', function() {
+
+    before(function() {
+      this.options = {
+        path: __dirname + '/styles',
+        cache: true
+      };
+    });
+
+    before(helper.setup);
+
+    it('should respond compiled stylesheet', function(done) {
+      var self = this;
+
+      helper.compile('imports.less', function(err, tree) {
+        if (err) throw err;
+
+        self.agent.get('/imports.css')
+          .expect('Content-Type', /css/)
+          .expect(200, tree.toCSS(), done);
+      });
+    });
+
+    it('should respond cached stylesheet', function(done) {
+      var self = this;
+
+      helper.compile('imports.less', function(err, tree) {
+        if (err) throw err;
+
+        self.agent.get('/imports.css')
+          .expect('Content-Type', /css/)
+          .expect(200, tree.toCSS(), done);
+      });
+    });
+
+    after(helper.destroy);
 
   });
 
