@@ -18,7 +18,7 @@ exports.destroy = function() {
 };
 
 exports.compile = function(filename, callback) {
-  var parser = new (less.Parser)({
+  var parser = new less.Parser({
     paths: [__dirname + '/../styles'],
     filename: filename
   });

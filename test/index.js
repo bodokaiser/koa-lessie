@@ -16,6 +16,20 @@ describe('lessie(path)', function() {
 
       self.agent.get('/simple.css')
         .expect('Content-Type', /css/)
+        .expect('Content-Length', stylesheet.length)
+        .expect(200, stylesheet, done);
+    });
+  });
+
+  it('should respond compiled stylesheet whith its imports', function(done) {
+    var self = this;
+
+    helper.compile('imports.less', function(err, stylesheet) {
+      if (err) throw err;
+
+      self.agent.get('/imports.css')
+        .expect('Content-Type', /css/)
+        .expect('Content-Length', stylesheet.length)
         .expect(200, stylesheet, done);
     });
   });

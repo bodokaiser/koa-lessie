@@ -26,7 +26,8 @@
 
   "dependencies": {
     "less": "^1.7.0",
-    "debug": "^0.8.1"
+    "debug": "^0.8.1",
+    "thunkify": "^2.1.1"
   },
 
   "devDependencies": {
