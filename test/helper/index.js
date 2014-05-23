@@ -29,7 +29,7 @@ exports.compile = function(filename, callback) {
     parser.parse(file.toString(), function(err, tree) {
       if (err) return callback(err);
 
-      callback(null, tree.toCSS())
+      callback(null, tree);
     });
   });
 };

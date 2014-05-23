@@ -26,26 +26,24 @@ describe('lessie(path)', function() {
   it('should respond compiled stylesheet', function(done) {
     var self = this;
 
-    helper.compile('simple.less', function(err, stylesheet) {
+    helper.compile('simple.less', function(err, tree) {
       if (err) throw err;
 
       self.agent.get('/simple.css')
         .expect('Content-Type', /css/)
-        .expect('Content-Length', stylesheet.length)
-        .expect(200, stylesheet, done);
+        .expect(200, tree.toCSS(), done);
     });
   });
 
   it('should respond compiled stylesheet with its imports', function(done) {
     var self = this;
 
-    helper.compile('imports.less', function(err, stylesheet) {
+    helper.compile('imports.less', function(err, tree) {
       if (err) throw err;
 
       self.agent.get('/imports.css')
         .expect('Content-Type', /css/)
-        .expect('Content-Length', stylesheet.length)
-        .expect(200, stylesheet, done);
+        .expect(200, tree.toCSS(), done);
     });
   });
 
@@ -73,26 +71,24 @@ describe('lessie(options)', function() {
     it('should respond compiled stylesheet', function(done) {
       var self = this;
 
-      helper.compile('simple.less', function(err, stylesheet) {
+      helper.compile('simple.less', function(err, tree) {
         if (err) throw err;
 
         self.agent.get('/simple.css')
           .expect('Content-Type', /css/)
-          .expect('Content-Length', stylesheet.length)
-          .expect(200, stylesheet, done);
+          .expect(200, tree.toCSS(), done);
       });
     });
 
     it('should respond compiled stylesheet with its imports', function(done) {
       var self = this;
 
-      helper.compile('imports.less', function(err, stylesheet) {
+      helper.compile('imports.less', function(err, tree) {
         if (err) throw err;
 
         self.agent.get('/imports.css')
           .expect('Content-Type', /css/)
-          .expect('Content-Length', stylesheet.length)
-          .expect(200, stylesheet, done);
+          .expect(200, tree.toCSS(), done);
       });
     });
 
@@ -124,13 +120,12 @@ describe('lessie(options)', function() {
     it('should respond compiled stylesheet in directory', function(done) {
       var self = this;
 
-      helper.compile('package/index.less', function(err, stylesheet) {
+      helper.compile('package/index.less', function(err, tree) {
         if (err) throw err;
 
         self.agent.get('/stylesheets/package.css')
           .expect('Content-Type', /css/)
-          .expect('Content-Length', stylesheet.length)
-          .expect(200, stylesheet, done);
+          .expect(200, tree.toCSS(), done);
       });
     });
 
@@ -139,6 +134,29 @@ describe('lessie(options)', function() {
   });
 
   describe('lessie({ path: "/styles", compress: true })', function() {
+
+    before(function() {
+      this.options = {
+        path: __dirname + '/styles',
+        compress: true
+      };
+    });
+
+    before(helper.setup);
+
+    it('should respond compressed stylesheet', function(done) {
+      var self = this;
+
+      helper.compile('imports.less', function(err, tree) {
+        if (err) throw err;
+
+        self.agent.get('/imports.css')
+          .expect('Content-Type', /css/)
+          .expect(200, tree.toCSS({ compress: true }), done);
+      });
+    });
+
+    after(helper.destroy);
 
   });
 
