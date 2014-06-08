@@ -53,19 +53,22 @@ describe('describe({ src, dest, once })', function() {
       .expect(200, function(err, res) {
         if (err) throw err;
 
-        var mtime1 = fs.statSync(__dirname + '/public/style.css').mtime;
+        var stat1 = fs.statSync(__dirname + '/public/style.css');
 
-        supertest(self.server).get('/style.css')
-          .expect(200, function(err, res) {
-            if (err) throw err;
+        setTimeout(function() {
+          supertest(self.server).get('/style.css')
+            .expect(200, function(err, res) {
+              if (err) throw err;
 
-            var mtime2 = fs.statSync(__dirname + '/public/style.css').mtime;
+              var stat2 = fs.statSync(__dirname + '/public/style.css');
 
-            assert.equal(String(mtime1), String(mtime2));
+              assert.equal(stat1.ctime.getTime(), stat2.ctime.getTime());
+              assert.equal(stat1.mtime.getTime(), stat2.mtime.getTime());
 
-            done();
-          });
-      });
+              done();
+            });
+        });
+      }, 1000);
   });
 
 });
