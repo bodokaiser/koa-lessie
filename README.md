@@ -35,7 +35,7 @@ the standard
       dest: '/public/stylesheets',
       once: true,
       compress: true,
-      prefix: '/stylesheets'
+      prefix: 'stylesheets'
     }));
 
 The `options` object can contain following properties.

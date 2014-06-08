@@ -106,7 +106,7 @@ describe('lessie({ src, dest, prefix })', function() {
     app.use(lessie({
       src: __dirname + '/styles',
       dest: __dirname + '/public/stylesheets',
-      prefix: '/stylesheets'
+      prefix: 'stylesheets'
     }));
     app.use(static(__dirname + '/public'));
 
