@@ -1,229 +1,135 @@
-var helper = require('./helper');
+var fs        = require('fs');
+var koa       = require('koa');
+var lessie    = require('../lib');
+var static    = require('koa-static');
+var assert    = require('assert');
+var supertest = require('supertest');
 
-describe('lessie(path)', function() {
+describe('lessie({ src, dest })', function() {
 
   before(function() {
-    this.options = __dirname + '/styles';
+    var app = koa();
+
+    app.use(lessie({
+      src: __dirname + '/styles',
+      dest: __dirname + '/public'
+    }));
+    app.use(static(__dirname + '/public'));
+
+    this.server = app.listen();
   });
 
-  before(helper.setup);
+  it('should respond "OK"', function(done) {
+    supertest(this.server).get('/style.css')
+      .expect(200, done);
+  });
 
-  it('should respond not found', function(done) {
-    this.agent.get('/')
+  it('should respond "Not Found"', function(done) {
+    supertest(this.server).get('/bootstrap.css')
       .expect(404, done);
   });
-
-  it('should respond not found', function(done) {
-    this.agent.get('/.css')
-      .expect(404, done);
-  });
-
-  it('should respond not found', function(done) {
-    this.agent.get('/foobar.css')
-      .expect(404, done);
-  });
-
-  it('should respond compiled stylesheet', function(done) {
-    var self = this;
-
-    helper.compile('simple.less', function(err, tree) {
-      if (err) throw err;
-
-      self.agent.get('/simple.css')
-        .expect('Content-Type', /css/)
-        .expect(200, tree.toCSS(), done);
-    });
-  });
-
-  it('should respond compiled stylesheet with its imports', function(done) {
-    var self = this;
-
-    helper.compile('imports.less', function(err, tree) {
-      if (err) throw err;
-
-      self.agent.get('/imports.css')
-        .expect('Content-Type', /css/)
-        .expect(200, tree.toCSS(), done);
-    });
-  });
-
-  after(helper.destroy);
 
 });
 
-describe('lessie(options)', function() {
+describe('describe({ src, dest, once })', function() {
 
-  describe('lessie({ path: "/styles" })', function() {
+  before(function() {
+    var app = koa();
 
-    before(function() {
-      this.options = {
-        path: __dirname + '/styles'
-      };
-    });
+    app.use(lessie({
+      src: __dirname + '/styles',
+      dest: __dirname + '/public',
+      once: true
+    }));
+    app.use(static(__dirname + '/public'));
 
-    before(helper.setup);
-
-    it('should respond not found', function(done) {
-      this.agent.get('/foobar.css')
-        .expect(404, done);
-    });
-
-    it('should respond compiled stylesheet', function(done) {
-      var self = this;
-
-      helper.compile('simple.less', function(err, tree) {
-        if (err) throw err;
-
-        self.agent.get('/simple.css')
-          .expect('Content-Type', /css/)
-          .expect(200, tree.toCSS(), done);
-      });
-    });
-
-    it('should respond compiled stylesheet with its imports', function(done) {
-      var self = this;
-
-      helper.compile('imports.less', function(err, tree) {
-        if (err) throw err;
-
-        self.agent.get('/imports.css')
-          .expect('Content-Type', /css/)
-          .expect(200, tree.toCSS(), done);
-      });
-    });
-
-    after(helper.destroy);
-
+    this.server = app.listen();
   });
 
-  describe('lessie({ path: "/styles", prefix: "/stylesheets" })', function() {
+  it('should not recompile styles more than once', function(done) {
+    var self = this;
 
-    before(function() {
-      this.options = {
-        prefix: '/stylesheets',
-        path: __dirname + '/styles'
-      };
-    });
-
-    before(helper.setup);
-
-    it('should respond not found', function(done) {
-      this.agent.get('/foobar.css')
-        .expect(404, done);
-    });
-
-    it('should respond not found', function(done) {
-      this.agent.get('/simple.css')
-        .expect(404, done);
-    });
-
-    it('should respond compiled stylesheet in directory', function(done) {
-      var self = this;
-
-      helper.compile('package/index.less', function(err, tree) {
+    supertest(this.server).get('/style.css')
+      .expect(200, function(err, res) {
         if (err) throw err;
 
-        self.agent.get('/stylesheets/package.css')
-          .expect('Content-Type', /css/)
-          .expect(200, tree.toCSS(), done);
+        var mtime1 = fs.statSync(__dirname + '/public/style.css').mtime;
+
+        supertest(self.server).get('/style.css')
+          .expect(200, function(err, res) {
+            if (err) throw err;
+
+            var mtime2 = fs.statSync(__dirname + '/public/style.css').mtime;
+
+            assert.equal(String(mtime1), String(mtime2));
+
+            done();
+          });
       });
-    });
-
-    after(helper.destroy)
-
   });
 
-  describe('lessie({ path: "/styles", compress: true })', function() {
+});
 
-    before(function() {
-      this.options = {
-        path: __dirname + '/styles',
-        compress: true
-      };
-    });
+describe('describe({ src, dest, minify })', function() {
 
-    before(helper.setup);
+  before(function() {
+    var app = koa();
 
-    it('should respond compressed stylesheet', function(done) {
-      var self = this;
+    app.use(lessie({
+      src: __dirname + '/styles',
+      dest: __dirname + '/public',
+      compress: true
+    }));
+    app.use(static(__dirname + '/public'));
 
-      helper.compile('imports.less', function(err, tree) {
-        if (err) throw err;
-
-        self.agent.get('/imports.css')
-          .expect('Content-Type', /css/)
-          .expect(200, tree.toCSS({ compress: true }), done);
-      });
-    });
-
-    after(helper.destroy);
-
+    this.server = app.listen();
   });
 
-  describe('lessie({ path: "/styles", cache: true })', function() {
-
-    before(function() {
-      this.options = {
-        path: __dirname + '/styles',
-        cache: true
-      };
-    });
-
-    before(helper.setup);
-
-    it('should respond compiled stylesheet', function(done) {
-      var self = this;
-
-      helper.compile('imports.less', function(err, tree) {
+  it('should not contain any spaces', function(done) {
+    supertest(this.server).get('/style.css')
+      .expect(200, function(err, res) {
         if (err) throw err;
 
-        self.agent.get('/imports.css')
-          .expect('Content-Type', /css/)
-          .expect(200, tree.toCSS(), done);
+        assert.equal(res.text.contains(' '), false);
+
+        done();
       });
-    });
-
-    it('should respond cached stylesheet', function(done) {
-      var self = this;
-
-      helper.compile('imports.less', function(err, tree) {
-        if (err) throw err;
-
-        self.agent.get('/imports.css')
-          .expect('Content-Type', /css/)
-          .expect(200, tree.toCSS(), done);
-      });
-    });
-
-    after(helper.destroy);
-
   });
 
-  describe('lessie({ path: "/styles", index: ["style.css"] })', function() {
+});
 
-    before(function() {
-      this.options = {
-        path: __dirname + '/styles',
-        index: ['style.less']
-      };
-    });
+describe('lessie({ src, dest, prefix })', function() {
 
-    before(helper.setup);
+  before(function() {
+    var app = koa();
 
-    it('should respond compiled stylesheet in directory', function(done) {
-      var self = this;
+    app.use(lessie({
+      src: __dirname + '/styles',
+      dest: __dirname + '/public/stylesheets',
+      prefix: '/stylesheets'
+    }));
+    app.use(static(__dirname + '/public'));
 
-      helper.compile('package/style.less', function(err, tree) {
-        if (err) throw err;
-
-        self.agent.get('/package.css')
-          .expect('Content-Type', /css/)
-          .expect(200, tree.toCSS(), done);
-      });
-    });
-
-    after(helper.destroy);
-
+    this.server = app.listen();
   });
 
+  it('should respond "OK"', function(done) {
+    supertest(this.server).get('/stylesheets/style.css')
+      .expect(200, done);
+  });
+
+});
+
+afterEach(function(done) {
+  if (this.server) {
+    this.server.close();
+  }
+
+  var filename = __dirname + '/public/style.css';
+
+  fs.exists(filename, function(exists) {
+    if (!exists) return done();
+
+    fs.unlink(__dirname + '/public/style.css', done);
+  });
 });

@@ -7,7 +7,12 @@ the stupid API.
 
     var app = koa();
 
-    app.use(lessie(__dirname + '/usr/styles'));
+    app.use(lessie({
+      src: __dirname + '/styles',
+      dest: __dirname + '/public'
+    }));
+
+    app.use(static(__dirname + '/public'));
 
     app.listen(3000);
 
@@ -20,41 +25,26 @@ With our lovely [npm](https://github.com/npm/npm)
 ## Documentation
 
 The **lessie** middleware aims to make less more desirable to configurate then
-the common used
+the standard
 [less.js-middleware](https://github.com/emberfeather/less.js-middleware).
-
-### lessie(path)
-
-    koa.use(lessie(__dirname + '/usr/styles'));
-
-If you provide a single `path` then **lessie** will take `request.path` concat it
-with the defined `path` to resolve a less file.
-
-For example if we have the file `/usr/styles/body.less` then a request to
-`/body.css` will resolve this. If there is no file found **lessie** will just
-`next` for other middleware to complete.
 
 ### lessie(options)
 
     koa.use(lessie({
-      path: '/usr/styles',
-      prefix: '/stylesheets',
+      src: '/styles',
+      dest: '/public/stylesheets',
+      once: true,
       compress: true,
-      cache: false,
-      index: ['bootstrap.less', 'index.less']
+      prefix: '/stylesheets'
     }));
 
-In most cases you will actually prefer to use the `options` hash as it will
-allow you more control to match your existing application structure.
+The `options` object can contain following properties.
 
-`options` can contain following properties:
-
-* `path`, sets the path to the less files, required.
-* `prefix`, will handle requests which path has this `prefix`, defaults to `/`.
-* `compress`, will minify the less files, defaults to `false`.
-* `cache`, will cache less files defaults to `false`.
-* `index`, if request path points to an directory it will look for the defined
-  `index`, defaults to `['index.less']`.
+* `src`, sets the path where to read the less files, required.
+* `dest`, sets the path where to write the css files, required.
+* `once`, if `true` middleware will only write css files once.
+* `compress`, if `true` middleware will minify written css.
+* `prefix`, only handles request which are prefixed with `prefix`.
 
 ## License
 

@@ -10,6 +10,7 @@ Thumbs.db
 
 # build files
 build
+*.css
 
 # package files
 node_modules

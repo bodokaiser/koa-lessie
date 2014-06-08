@@ -26,14 +26,14 @@
 
   "dependencies": {
     "less": "^1.7.0",
-    "debug": "^0.8.1",
-    "thunkify": "^2.1.1"
+    "co-fs": "^1.2.0"
   },
 
   "devDependencies": {
-    "supertest": "^0.13.0",
+    "koa": "^0.6.1",
+    "koa-static": "^1.4.5",
     "mocha": "^1.19.0",
-    "koa": "^0.6.1"
+    "supertest": "^0.13.0"
   },
 
   "repository": {
